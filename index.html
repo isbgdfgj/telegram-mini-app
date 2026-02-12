@@ -83,6 +83,10 @@
 
 async function loadStats() {
   const initData = tg.initData;
+if (!initData) {
+  alert("tg.initData пустой — Telegram не передал подпись. Открой Mini App именно из бота/кнопки.");
+  return;
+}
 
   const r = await fetch(`${BACKEND_URL}/tg/stats`, {
     headers: {
@@ -90,6 +94,11 @@ async function loadStats() {
     }
   });
 
+  if (!r.ok) {
+  const err = await r.text();
+  alert(`Ошибка /tg/stats: HTTP ${r.status}\n${err}`);
+  return;
+}
   const data = await r.json();
 
   const subjects = data.subjects || [];
@@ -119,6 +128,10 @@ async function loadStats() {
 
 async function addSubject() {
   const initData = tg.initData;
+if (!initData) {
+  alert("tg.initData пустой — Telegram не передал подпись. Открой Mini App именно из бота/кнопки.");
+  return;
+}
 
   const name = document.getElementById("name").value;
   const missed = Number(document.getElementById("missed").value);
@@ -136,6 +149,12 @@ async function addSubject() {
       total
     })
   });
+  
+  if (!r.ok) {
+  const err = await r.text();
+  alert(`Ошибка /tg/add: HTTP ${r.status}\n${err}`);
+  return;
+}
 
   const data = await r.json();
 
