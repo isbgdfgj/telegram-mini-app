@@ -81,60 +81,67 @@
       `<p>👤 ${user.first_name} (ID: ${user.id})</p>`;
   }
 
-  async function loadStats() {
-    if (!user?.id) return alert("Нет user.id");
+async function loadStats() {
+  const initData = tg.initData;
 
-    const r = await fetch(`${BACKEND_URL}/stats/${user.id}`);
-    const data = await r.json();
-
-    const subjects = data.subjects || [];
-
-    if (!subjects.length) {
-      document.getElementById("stats").innerHTML = "Нет предметов";
-      return;
+  const r = await fetch(`${BACKEND_URL}/tg/stats`, {
+    headers: {
+      "X-Telegram-Init-Data": initData
     }
+  });
 
-    let html = "";
+  const data = await r.json();
 
-    subjects.forEach(s => {
-      const percent = (s.missed / s.total * 100).toFixed(1);
-      const canMiss = Math.floor(s.total * 0.6) - s.missed;
+  const subjects = data.subjects || [];
 
-      html += `
-        <div class="card">
-          <b>${s.name}</b><br>
-          Пропуски: ${s.missed}/${s.total} (${percent}%)<br>
-          Можно ещё пропустить: ${canMiss}
-        </div>
-      `;
-    });
-
-    document.getElementById("stats").innerHTML = html;
+  if (!subjects.length) {
+    document.getElementById("stats").innerHTML = "Нет предметов";
+    return;
   }
 
-  async function addSubject() {
-    if (!user?.id) return alert("Нет user.id");
+  let html = "";
 
-    const name = document.getElementById("name").value;
-    const missed = Number(document.getElementById("missed").value);
-    const total = Number(document.getElementById("total").value);
+  subjects.forEach(s => {
+    const percent = (s.missed / s.total * 100).toFixed(1);
+    const canMiss = Math.floor(s.total * 0.6) - s.missed;
 
-    const r = await fetch(`${BACKEND_URL}/add`, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({
-        user_id: user.id,
-        name,
-        missed,
-        total
-      })
-    });
+    html += `
+      <div class="card">
+        <b>${s.name}</b><br>
+        Пропуски: ${s.missed}/${s.total} (${percent}%)<br>
+        Можно ещё пропустить: ${canMiss}
+      </div>
+    `;
+  });
 
-    const data = await r.json();
+  document.getElementById("stats").innerHTML = html;
+}
 
-    document.getElementById("result").innerHTML =
-      `✅ Сохранено. Процент: ${data.percent}%`;
-  }
+async function addSubject() {
+  const initData = tg.initData;
+
+  const name = document.getElementById("name").value;
+  const missed = Number(document.getElementById("missed").value);
+  const total = Number(document.getElementById("total").value);
+
+  const r = await fetch(`${BACKEND_URL}/tg/add`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Telegram-Init-Data": initData
+    },
+    body: JSON.stringify({
+      name,
+      missed,
+      total
+    })
+  });
+
+  const data = await r.json();
+
+  document.getElementById("result").innerHTML =
+    `✅ Сохранено. Процент: ${data.percent}%`;
+}
 </script>
 
 </body>
