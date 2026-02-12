@@ -2,43 +2,138 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Mini App</title>
+  <title>School Tracker</title>
 
-  <!-- Подключаем Telegram Web App API -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
     body {
       font-family: Arial;
-      text-align: center;
-      padding: 40px;
+      padding: 20px;
+      background: #f5f5f5;
     }
+
+    h1 {
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      margin: 10px 0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
     button {
-      padding: 10px 20px;
-      font-size: 16px;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background: #2AABEE;
+      color: white;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
     }
   </style>
 </head>
+
 <body>
 
-<h1>Привет 👋</h1>
-<p>Это моё первое Telegram Mini App</p>
-<button onclick="sendData()">Отправить данные</button>
+<h1>📚 School Tracker</h1>
+
+<div id="user"></div>
+
+<div class="card">
+  <button onclick="loadStats()">📊 Загрузить статистику</button>
+  <div id="stats"></div>
+</div>
+
+<div class="card">
+  <h3>➕ Добавить предмет</h3>
+
+  <input id="name" placeholder="Предмет">
+  <input id="missed" placeholder="Пропуски" type="number">
+  <input id="total" placeholder="Всего занятий" type="number">
+
+  <button onclick="addSubject()">💾 Сохранить</button>
+
+  <div id="result"></div>
+</div>
 
 <script>
   const tg = window.Telegram.WebApp;
   tg.expand();
 
-  // Показываем данные пользователя
-  if (tg.initDataUnsafe.user) {
-    document.body.innerHTML += `
-      <p>Ваш ID: ${tg.initDataUnsafe.user.id}</p>
-      <p>Ваше имя: ${tg.initDataUnsafe.user.first_name}</p>
-    `;
+  const BACKEND_URL = "https://school-tracker-api-hxjl.onrender.com";
+
+  const user = tg.initDataUnsafe?.user;
+
+  if (user) {
+    document.getElementById("user").innerHTML =
+      `<p>👤 ${user.first_name} (ID: ${user.id})</p>`;
   }
 
-  function sendData() {
-    tg.sendData("Пользователь нажал кнопку");
+  async function loadStats() {
+    if (!user?.id) return alert("Нет user.id");
+
+    const r = await fetch(`${BACKEND_URL}/stats/${user.id}`);
+    const data = await r.json();
+
+    const subjects = data.subjects || [];
+
+    if (!subjects.length) {
+      document.getElementById("stats").innerHTML = "Нет предметов";
+      return;
+    }
+
+    let html = "";
+
+    subjects.forEach(s => {
+      const percent = (s.missed / s.total * 100).toFixed(1);
+      const canMiss = Math.floor(s.total * 0.6) - s.missed;
+
+      html += `
+        <div class="card">
+          <b>${s.name}</b><br>
+          Пропуски: ${s.missed}/${s.total} (${percent}%)<br>
+          Можно ещё пропустить: ${canMiss}
+        </div>
+      `;
+    });
+
+    document.getElementById("stats").innerHTML = html;
+  }
+
+  async function addSubject() {
+    if (!user?.id) return alert("Нет user.id");
+
+    const name = document.getElementById("name").value;
+    const missed = Number(document.getElementById("missed").value);
+    const total = Number(document.getElementById("total").value);
+
+    const r = await fetch(`${BACKEND_URL}/add`, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        user_id: user.id,
+        name,
+        missed,
+        total
+      })
+    });
+
+    const data = await r.json();
+
+    document.getElementById("result").innerHTML =
+      `✅ Сохранено. Процент: ${data.percent}%`;
   }
 </script>
 
