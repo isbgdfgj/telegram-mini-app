@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <title>Mini App</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  const tg = window.Telegram.WebApp;
+
+document.body.innerHTML += `
+<p>Ваш ID: ${tg.initDataUnsafe.user?.id}</p>
+<p>Ваше имя: ${tg.initDataUnsafe.user?.first_name}</p>
+`;
   <style>
     body {
       font-family: Arial;
