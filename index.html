@@ -1,168 +1,436 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>School Tracker</title>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
-    body {
-      font-family: Arial;
-      padding: 20px;
-      background: #f5f5f5;
+    :root{
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: rgba(17,24,39,.10);
+      --shadow: 0 8px 26px rgba(17,24,39,.08);
+      --accent: #2AABEE;
+      --accentText: #ffffff;
+      --danger: #ef4444;
+      --success: #16a34a;
+
+      --radius: 16px;
+      --gap: 12px;
     }
 
-    h1 {
-      text-align: center;
+    /* Telegram theme support */
+    body.tg {
+      --bg: var(--tg-theme-bg-color, var(--bg));
+      --text: var(--tg-theme-text-color, var(--text));
+      --muted: color-mix(in srgb, var(--text) 55%, transparent);
+      --card: var(--tg-theme-secondary-bg-color, var(--card));
+      --accent: var(--tg-theme-button-color, var(--accent));
+      --accentText: var(--tg-theme-button-text-color, var(--accentText));
+      --border: color-mix(in srgb, var(--text) 12%, transparent);
     }
 
-    .card {
-      background: white;
-      padding: 15px;
-      border-radius: 12px;
-      margin: 10px 0;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body{
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
     }
 
-    button {
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      background: #2AABEE;
-      color: white;
+    .wrap{
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 14px 14px calc(18px + env(safe-area-inset-bottom));
+    }
+
+    .topbar{
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      padding: 10px 0;
+      background: linear-gradient(to bottom, var(--bg) 75%, transparent);
+      backdrop-filter: blur(6px);
+    }
+
+    .title{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius);
+      background: color-mix(in srgb, var(--card) 75%, transparent);
+      border: 1px solid var(--border);
+    }
+    .title h1{
+      margin: 0;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: .2px;
+    }
+    .pill{
+      font-size: 12px;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--card) 90%, transparent);
+      white-space: nowrap;
+    }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 12px;
+      margin-top: var(--gap);
+    }
+
+    .row{
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    @media (min-width: 420px){
+      .row.two{
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .label{
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0 0 6px 2px;
+    }
+
+    input{
       width: 100%;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--card) 92%, transparent);
+      color: var(--text);
+      outline: none;
+      font-size: 15px;
+    }
+    input:focus{
+      border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent);
+    }
+
+    .btn{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px 12px;
+      border: 0;
+      border-radius: 14px;
+      background: var(--accent);
+      color: var(--accentText);
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform .04s ease;
+    }
+    .btn:active{ transform: scale(.99); }
+    .btn.secondary{
+      background: color-mix(in srgb, var(--card) 85%, transparent);
+      color: var(--text);
+      border: 1px solid var(--border);
+      box-shadow: none;
+    }
+
+    .muted{
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .subjects{
+      display: grid;
+      gap: 10px;
       margin-top: 10px;
     }
 
-    input {
-      width: 100%;
-      padding: 8px;
-      margin: 5px 0;
-      border-radius: 6px;
-      border: 1px solid #ccc;
+    .subject{
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      background: color-mix(in srgb, var(--card) 92%, transparent);
     }
+    .subjectTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 10px;
+    }
+    .subjectName{
+      margin: 0;
+      font-weight: 800;
+      font-size: 15px;
+    }
+    .badge{
+      font-size: 12px;
+      font-weight: 800;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--card) 90%, transparent);
+      white-space: nowrap;
+    }
+
+    .bar{
+      height: 10px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--text) 8%, transparent);
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    .bar > div{
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      border-radius: 999px;
+    }
+
+    .meta{
+      margin-top: 10px;
+      display: grid;
+      gap: 4px;
+      font-size: 13px;
+    }
+
+    .ok{ color: var(--success); font-weight: 800; }
+    .warn{ color: #f59e0b; font-weight: 800; }
+    .bad{ color: var(--danger); font-weight: 800; }
+
+    .toast{
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--card) 92%, transparent);
+      font-size: 13px;
+    }
+
+    .footerSpace{ height: 6px; }
   </style>
 </head>
 
-<body>
-
-<h1>📚 School Tracker</h1>
-
-<div id="user"></div>
-
-<div class="card">
-  <button onclick="loadStats()">📊 Загрузить статистику</button>
-  <div id="stats"></div>
-</div>
-
-<div class="card">
-  <h3>➕ Добавить предмет</h3>
-
-  <input id="name" placeholder="Предмет">
-  <input id="missed" placeholder="Пропуски" type="number">
-  <input id="total" placeholder="Всего занятий" type="number">
-
-  <button onclick="addSubject()">💾 Сохранить</button>
-
-  <div id="result"></div>
-</div>
-
-<script>
-  const tg = window.Telegram.WebApp;
-  tg.expand();
-
-  const BACKEND_URL = "https://school-tracker-api-hxjl.onrender.com";
-
-  const user = tg.initDataUnsafe?.user;
-
-  if (user) {
-    document.getElementById("user").innerHTML =
-      `<p>👤 ${user.first_name} (ID: ${user.id})</p>`;
-  }
-
-async function loadStats() {
-  const initData = tg.initData;
-if (!initData) {
-  alert("tg.initData пустой — Telegram не передал подпись. Открой Mini App именно из бота/кнопки.");
-  return;
-}
-
-  const r = await fetch(`${BACKEND_URL}/tg/stats`, {
-    headers: {
-      "X-Telegram-Init-Data": initData
-    }
-  });
-
-  if (!r.ok) {
-  const err = await r.text();
-  alert(`Ошибка /tg/stats: HTTP ${r.status}\n${err}`);
-  return;
-}
-  const data = await r.json();
-
-  const subjects = data.subjects || [];
-
-  if (!subjects.length) {
-    document.getElementById("stats").innerHTML = "Нет предметов";
-    return;
-  }
-
-  let html = "";
-
-  subjects.forEach(s => {
-    const percent = (s.missed / s.total * 100).toFixed(1);
-    const canMiss = Math.floor(s.total * 0.6) - s.missed;
-
-    html += `
-      <div class="card">
-        <b>${s.name}</b><br>
-        Пропуски: ${s.missed}/${s.total} (${percent}%)<br>
-        Можно ещё пропустить: ${canMiss}
+<body class="tg">
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title">
+        <h1>📚 School Tracker</h1>
+        <div id="userPill" class="pill">…</div>
       </div>
-    `;
-  });
+    </div>
 
-  document.getElementById("stats").innerHTML = html;
-}
+    <div class="card">
+      <button class="btn secondary" onclick="loadStats()">🔄 Обновить статистику</button>
+      <div id="statsHint" class="muted" style="margin-top:10px;">
+        Нажми «Обновить статистику» или добавь предмет ниже.
+      </div>
+      <div id="subjects" class="subjects"></div>
+    </div>
 
-async function addSubject() {
-  const initData = tg.initData;
-if (!initData) {
-  alert("tg.initData пустой — Telegram не передал подпись. Открой Mini App именно из бота/кнопки.");
-  return;
-}
+    <div class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+        <div>
+          <div style="font-weight:900;">➕ Добавить / обновить предмет</div>
+          <div class="muted">Сервер сам определит твой ID через Telegram initData.</div>
+        </div>
+      </div>
 
-  const name = document.getElementById("name").value;
-  const missed = Number(document.getElementById("missed").value);
-  const total = Number(document.getElementById("total").value);
+      <div style="margin-top:12px;">
+        <div class="label">Предмет</div>
+        <input id="name" placeholder="Например: Математика" autocomplete="off" />
+      </div>
 
-  const r = await fetch(`${BACKEND_URL}/tg/add`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Telegram-Init-Data": initData
-    },
-    body: JSON.stringify({
-  user_id: tg.initDataUnsafe.user.id,
-  name,
-  missed,
-  total
-})
-  });
-  
-  if (!r.ok) {
-  const err = await r.text();
-  alert(`Ошибка /tg/add: HTTP ${r.status}\n${err}`);
-  return;
-}
+      <div class="row two" style="margin-top:10px;">
+        <div>
+          <div class="label">Пропуски</div>
+          <input id="missed" placeholder="0" type="number" min="0" inputmode="numeric" />
+        </div>
+        <div>
+          <div class="label">Всего занятий</div>
+          <input id="total" placeholder="1" type="number" min="1" inputmode="numeric" />
+        </div>
+      </div>
 
-  const data = await r.json();
+      <button class="btn" style="margin-top:12px;" onclick="addSubject()">💾 Сохранить</button>
 
-  document.getElementById("result").innerHTML =
-    `✅ Сохранено. Процент: ${data.percent}%`;
-}
-</script>
+      <div id="result" class="toast muted" style="display:none;"></div>
+    </div>
 
+    <div class="footerSpace"></div>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    // Если хочешь, можно включить кнопку закрытия
+    // tg.MainButton.hide();
+
+    const BACKEND_URL = "https://school-tracker-api-hxjl.onrender.com";
+
+    const user = tg.initDataUnsafe?.user;
+    const userPill = document.getElementById("userPill");
+    userPill.textContent = user
+      ? `${user.first_name || "User"} · ID ${user.id}`
+      : "Открой через кнопку бота";
+
+    function showResult(text) {
+      const el = document.getElementById("result");
+      el.style.display = "block";
+      el.innerHTML = text;
+    }
+
+    function requireInitData() {
+      const initData = tg.initData;
+      if (!initData) {
+        alert("tg.initData пустой — открой Mini App через кнопку бота (/start → 📊 Открыть трекер).");
+        return null;
+      }
+      return initData;
+    }
+
+    function statusByPercent(p) {
+      if (p < 40) return {label: "✅ Ок", cls: "ok"};
+      if (p <= 60) return {label: "⚠️ Риск", cls: "warn"};
+      return {label: "❌ Перебор", cls: "bad"};
+    }
+
+    function renderSubjects(subjects) {
+      const box = document.getElementById("subjects");
+      const hint = document.getElementById("statsHint");
+
+      if (!subjects || !subjects.length) {
+        box.innerHTML = "";
+        hint.textContent = "Пока нет предметов. Добавь первый предмет ниже 👇";
+        return;
+      }
+
+      hint.textContent = `Предметов: ${subjects.length}`;
+
+      box.innerHTML = subjects.map(s => {
+        const missed = Number(s.missed || 0);
+        const total  = Number(s.total || 0);
+        const percent = total ? (missed / total * 100) : 0;
+        const percentText = total ? percent.toFixed(1) : "0.0";
+        const maxMissed = Math.floor(total * 0.6);
+        const canMiss = Math.max(0, maxMissed - missed);
+
+        const st = statusByPercent(percent);
+        const width = Math.min(100, Math.max(0, percent));
+
+        return `
+          <div class="subject">
+            <div class="subjectTop">
+              <div>
+                <div class="subjectName">📘 ${escapeHtml(s.name || "—")}</div>
+                <div class="muted">Пропуски: ${missed}/${total}</div>
+              </div>
+              <div class="badge ${st.cls}">${st.label}</div>
+            </div>
+
+            <div class="bar" aria-label="Progress">
+              <div style="width:${width}%;"></div>
+            </div>
+
+            <div class="meta">
+              <div>Процент пропусков: <b>${percentText}%</b></div>
+              <div>Можно ещё пропустить (60%): <b>${canMiss}</b></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    async function loadStats() {
+      const initData = requireInitData();
+      if (!initData) return;
+
+      const r = await fetch(`${BACKEND_URL}/tg/stats`, {
+        headers: { "X-Telegram-Init-Data": initData }
+      });
+
+      if (!r.ok) {
+        const err = await r.text();
+        alert(`Ошибка /tg/stats: HTTP ${r.status}\n${err}`);
+        return;
+      }
+
+      const data = await r.json();
+      renderSubjects(data.subjects || []);
+    }
+
+    async function addSubject() {
+      const initData = requireInitData();
+      if (!initData) return;
+
+      const name = document.getElementById("name").value.trim();
+      const missed = Number(document.getElementById("missed").value);
+      const total = Number(document.getElementById("total").value);
+
+      if (!name) return alert("Введите предмет");
+      if (!Number.isFinite(missed) || missed < 0) return alert("Пропуски должны быть >= 0");
+      if (!Number.isFinite(total) || total <= 0) return alert("Всего занятий должно быть > 0");
+
+      const r = await fetch(`${BACKEND_URL}/tg/add`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Telegram-Init-Data": initData
+        },
+        body: JSON.stringify({ name, missed, total })
+      });
+
+      if (!r.ok) {
+        const err = await r.text();
+        alert(`Ошибка /tg/add: HTTP ${r.status}\n${err}`);
+        return;
+      }
+
+      const data = await r.json();
+      const percentText = (typeof data.percent === "number") ? `${data.percent}%` : "—";
+      const canText = (typeof data.can_miss_more === "number") ? `${data.can_miss_more}` : "—";
+
+      showResult(`✅ Сохранено. Процент: <b>${percentText}</b> · ещё можно пропустить: <b>${canText}</b>`);
+
+      // очистим поля чуть аккуратнее
+      // document.getElementById("name").value = "";
+      // document.getElementById("missed").value = "";
+      // document.getElementById("total").value = "";
+
+      await loadStats();
+    }
+
+    // Автозагрузка при открытии (можно выключить, если не нужно)
+    loadStats();
+  </script>
 </body>
 </html>
