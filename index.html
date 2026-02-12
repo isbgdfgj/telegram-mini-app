@@ -144,10 +144,11 @@ if (!initData) {
       "X-Telegram-Init-Data": initData
     },
     body: JSON.stringify({
-      name,
-      missed,
-      total
-    })
+  user_id: tg.initDataUnsafe.user.id,
+  name,
+  missed,
+  total
+})
   });
   
   if (!r.ok) {
