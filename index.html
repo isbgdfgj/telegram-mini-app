@@ -3,434 +3,368 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>School Tracker</title>
-
+  <title>Расписание</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
-    :root{
-      --bg: #f6f7fb;
+    :root {
+      --bg: #f6f7fb; 
       --card: #ffffff;
       --text: #111827;
       --muted: #6b7280;
-      --border: rgba(17,24,39,.10);
-      --shadow: 0 8px 26px rgba(17,24,39,.08);
+      --border: rgba(17, 24, 39, .10);
+      --shadow: 0 8px 26px rgba(17, 24, 39, .08);
       --accent: #2AABEE;
       --accentText: #ffffff;
-      --danger: #ef4444;
-      --success: #16a34a;
-
       --radius: 16px;
-      --gap: 12px;
+      --gap: 16px;
+      --ok: #16a34a;
+      --warn: #f59e0b;
+      --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      --button-bg: #f4f6f9;
+      --button-active-bg: rgba(42, 171, 238, 0.1);
+      --button-border: 1px solid #ddd;
+      --button-hover: rgba(0, 0, 0, 0.05);
     }
 
-    /* Telegram theme support */
-    body.tg {
-      --bg: var(--tg-theme-bg-color, var(--bg));
-      --text: var(--tg-theme-text-color, var(--text));
-      --muted: color-mix(in srgb, var(--text) 55%, transparent);
-      --card: var(--tg-theme-secondary-bg-color, var(--card));
-      --accent: var(--tg-theme-button-color, var(--accent));
-      --accentText: var(--tg-theme-button-text-color, var(--accentText));
-      --border: color-mix(in srgb, var(--text) 12%, transparent);
+    * {
+      box-sizing: border-box;
     }
 
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body{
+    body {
       margin: 0;
       background: var(--bg);
       color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      font-family: var(--font-family);
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
     }
 
-    .wrap{
-      max-width: 520px;
+    .wrap {
+      max-width: 600px;
       margin: 0 auto;
-      padding: 14px 14px calc(18px + env(safe-area-inset-bottom));
+      padding: 16px;
     }
 
-    .topbar{
+    .topbar {
       position: sticky;
       top: 0;
       z-index: 5;
-      padding: 10px 0;
+      padding: 16px 0;
       background: linear-gradient(to bottom, var(--bg) 75%, transparent);
       backdrop-filter: blur(6px);
     }
 
-    .title{
+    .title {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 10px 12px;
-      border-radius: var(--radius);
-      background: color-mix(in srgb, var(--card) 75%, transparent);
-      border: 1px solid var(--border);
-    }
-    .title h1{
-      margin: 0;
-      font-size: 16px;
-      font-weight: 800;
-      letter-spacing: .2px;
-    }
-    .pill{
-      font-size: 12px;
-      color: var(--muted);
-      border: 1px solid var(--border);
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: color-mix(in srgb, var(--card) 90%, transparent);
-      white-space: nowrap;
+      justify-content: center;
+      padding: 10px;
+      font-weight: 900;
+      font-size: 18px;
+      letter-spacing: 0.2px;
     }
 
-    .card{
+    .card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      padding: 12px;
+      padding: 16px;
       margin-top: var(--gap);
     }
 
-    .row{
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
-    @media (min-width: 420px){
-      .row.two{
-        grid-template-columns: 1fr 1fr;
-      }
+    .daysOfWeekWrapper {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 16px;
     }
 
-    .label{
-      font-size: 12px;
-      color: var(--muted);
-      margin: 0 0 6px 2px;
-    }
-
-    input{
-      width: 100%;
-      padding: 12px 12px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: color-mix(in srgb, var(--card) 92%, transparent);
-      color: var(--text);
-      outline: none;
-      font-size: 15px;
-    }
-    input:focus{
-      border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
-      box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent);
-    }
-
-    .btn{
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      width: 100%;
-      padding: 12px 12px;
-      border: 0;
-      border-radius: 14px;
-      background: var(--accent);
-      color: var(--accentText);
+    .daysOfWeekBtn {
+      flex-grow: 1;
+      padding: 14px;
+      background-color: var(--button-bg);
+      border: var(--button-border);
+      border-radius: 10px;
       font-weight: 700;
-      font-size: 15px;
+      font-size: 14px;
+      text-align: center;
       cursor: pointer;
-      user-select: none;
-      transition: transform .04s ease;
-    }
-    .btn:active{ transform: scale(.99); }
-    .btn.secondary{
-      background: color-mix(in srgb, var(--card) 85%, transparent);
-      color: var(--text);
-      border: 1px solid var(--border);
-      box-shadow: none;
+      transition: all 0.3s ease;
+      width: 100%;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
-    .muted{
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.35;
+    .daysOfWeekBtn.active {
+      background-color: var(--button-active-bg);
+      border: 2px solid rgba(42, 171, 238, 0.65);
+      box-shadow: 0 0 0 4px rgba(42, 171, 238, 0.18);
     }
 
-    .subjects{
+    .daysOfWeekBtn:hover {
+      background-color: var(--button-hover);
+    }
+
+    .dayTitle {
+      text-align: center;
+      font-size: 24px;
+      margin-top: 16px;
+      font-weight: bold;
+    }
+
+    .lessonList {
+      margin-top: 20px;
+    }
+
+    .lessonItem {
       display: grid;
+      grid-template-columns: 40px 1fr auto;
+      align-items: center;
       gap: 10px;
-      margin-top: 10px;
-    }
-
-    .subject{
-      border: 1px solid var(--border);
+      padding: 12px 16px;
       border-radius: 14px;
-      padding: 12px;
-      background: color-mix(in srgb, var(--card) 92%, transparent);
-    }
-    .subjectTop{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap: 10px;
-    }
-    .subjectName{
-      margin: 0;
-      font-weight: 800;
-      font-size: 15px;
-    }
-    .badge{
-      font-size: 12px;
-      font-weight: 800;
-      padding: 6px 10px;
-      border-radius: 999px;
       border: 1px solid var(--border);
-      background: color-mix(in srgb, var(--card) 90%, transparent);
+      background: #f3f4f6;
+      font-size: 14px;
+    }
+
+    .lessonNum {
+      font-weight: 900;
+      color: var(--muted);
+    }
+
+    .lessonName {
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .lessonName.editing, .lessonTime.editing {
+      background-color: #f0f0f0;
+      border: 1px solid #ccc;
+      padding: 2px 5px;
+    }
+
+    .lessonTime {
+      font-weight: 900;
+      color: var(--muted);
       white-space: nowrap;
+      font-size: 12px;
+      cursor: pointer;
     }
 
-    .bar{
-      height: 10px;
-      border-radius: 999px;
-      background: color-mix(in srgb, var(--text) 8%, transparent);
-      overflow: hidden;
-      margin-top: 10px;
-    }
-    .bar > div{
-      height: 100%;
-      width: 0%;
-      background: var(--accent);
-      border-radius: 999px;
-    }
-
-    .meta{
-      margin-top: 10px;
-      display: grid;
-      gap: 4px;
-      font-size: 13px;
-    }
-
-    .ok{ color: var(--success); font-weight: 800; }
-    .warn{ color: #f59e0b; font-weight: 800; }
-    .bad{ color: var(--danger); font-weight: 800; }
-
-    .toast{
-      margin-top: 10px;
-      padding: 10px 12px;
-      border-radius: 12px;
+    .bigMsg {
+      margin-top: 16px;
+      padding: 20px 14px;
+      border-radius: 16px;
       border: 1px solid var(--border);
-      background: color-mix(in srgb, var(--card) 92%, transparent);
-      font-size: 13px;
+      background: var(--card);
+      text-align: center;
+      font-weight: 1000;
+      font-size: 20px;
+      line-height: 1.15;
     }
 
-    .footerSpace{ height: 6px; }
+    .pillOk {
+      color: var(--ok);
+    }
+
+    .pillWarn {
+      color: var(--warn);
+    }
   </style>
 </head>
 
 <body class="tg">
   <div class="wrap">
     <div class="topbar">
-      <div class="title">
-        <h1>📚 School Tracker</h1>
-        <div id="userPill" class="pill">…</div>
+      <div class="title">Расписание</div>
+    </div>
+
+    <div class="card swipeZone" id="countdownCard">
+      <div class="timeBlock">
+        <div class="timeLeft">
+          <div id="timeLabel" class="timeLabel">—</div>
+          <div id="timeSub" class="timeSub">—</div>
+        </div>
+        <div id="timeRight" class="timeRight">—</div>
       </div>
     </div>
 
-    <div class="card">
-      <button class="btn secondary" onclick="loadStats()">🔄 Обновить статистику</button>
-      <div id="statsHint" class="muted" style="margin-top:10px;">
-        Нажми «Обновить статистику» или добавь предмет ниже.
-      </div>
-      <div id="subjects" class="subjects"></div>
+    <div class="daysOfWeekWrapper">
+      <button class="daysOfWeekBtn" id="dayBtn1" onclick="displaySchedule(0)">Пн</button>
+      <button class="daysOfWeekBtn" id="dayBtn2" onclick="displaySchedule(1)">Вт</button>
+      <button class="daysOfWeekBtn" id="dayBtn3" onclick="displaySchedule(2)">Ср</button>
+      <button class="daysOfWeekBtn" id="dayBtn4" onclick="displaySchedule(3)">Чт</button>
+      <button class="daysOfWeekBtn" id="dayBtn5" onclick="displaySchedule(4)">Пт</button>
     </div>
 
-    <div class="card">
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-        <div>
-          <div style="font-weight:900;">➕ Добавить / обновить предмет</div>
-          <div class="muted">Сервер сам определит твой ID через Telegram initData.</div>
-        </div>
+    <div class="card swipeZone" id="scheduleCard">
+      <div class="dayHeader">
+        <button class="dayBtn active" onclick="prevDay()" aria-label="Предыдущий день"></button>
+
+        <div class="dayTitle" id="dayName">—</div>
+
+        <button class="dayBtn active" onclick="nextDay()" aria-label="Следующий день">▶</button>
       </div>
 
-      <div style="margin-top:12px;">
-        <div class="label">Предмет</div>
-        <input id="name" placeholder="Например: Математика" autocomplete="off" />
-      </div>
-
-      <div class="row two" style="margin-top:10px;">
-        <div>
-          <div class="label">Пропуски</div>
-          <input id="missed" placeholder="0" type="number" min="0" inputmode="numeric" />
-        </div>
-        <div>
-          <div class="label">Всего занятий</div>
-          <input id="total" placeholder="1" type="number" min="1" inputmode="numeric" />
-        </div>
-      </div>
-
-      <button class="btn" style="margin-top:12px;" onclick="addSubject()">💾 Сохранить</button>
-
-      <div id="result" class="toast muted" style="display:none;"></div>
+      <div id="dayLessons" class="lessonList"></div>
+      <div id="weekendMsg" class="bigMsg" style="display:none;">Сегодня выходной, зачилься 😎</div>
     </div>
-
-    <div class="footerSpace"></div>
   </div>
 
   <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+    const tg = window.Telegram?.WebApp;
+    if (tg) { tg.expand(); tg.MainButton?.hide(); }
 
-    // Если хочешь, можно включить кнопку закрытия
-    // tg.MainButton.hide();
+    const schedule = [
+      { day: "Понедельник", lessons: [
+          { name: "Разговоры о важном", time: "09:00–09:45" },
+          { name: "Английский", time: "09:55–10:40" },
+          { name: "Русский", time: "11:00–11:45" },
+          { name: "Литература", time: "12:05–12:50" },
+          { name: "Физика", time: "13:10–13:55" },
+          { name: "История", time: "14:05–14:50" },
+          { name: "Вероятность и статистика", time: "15:00–15:45" },
+      ]},
+      { day: "Вторник", lessons: [
+          { name: "Алгебра", time: "09:00–09:45" },
+          { name: "Алгебра", time: "09:55–10:40" },
+          { name: "Химия", time: "11:00–11:45" },
+          { name: "Литература", time: "12:05–12:50" },
+          { name: "Литература", time: "13:10–13:55" },
+          { name: "Обществознание", time: "14:05–14:50" },
+          { name: "Физ-ра", time: "15:00–15:45" },
+      ]},
+      { day: "Среда", lessons: [
+          { name: "Информатика", time: "09:00–09:45" },
+          { name: "Алгебра", time: "09:55–10:40" },
+          { name: "Геометрия", time: "11:00–11:45" },
+          { name: "Физика", time: "12:05–12:50" },
+          { name: "Английский", time: "13:10–13:55" },
+          { name: "География", time: "14:05–14:50" },
+          { name: "ОБЗР", time: "15:00–15:45" },
+      ]},
+      { day: "Четверг", lessons: [
+          { name: "История", time: "09:00–09:45" },
+          { name: "Обществознание", time: "09:55–10:40" },
+          { name: "Русский", time: "11:00–11:45" },
+          { name: "Биология", time: "12:05–12:50" },
+          { name: "Геометрия", time: "13:10–13:55" },
+          { name: "Геометрия", time: "14:05–14:50" },
+          { name: "Информатика", time: "15:00–15:45" },
+      ]},
+      { day: "Пятница", lessons: [
+          { name: "Алгебра", time: "09:00–09:45" },
+          { name: "Информатика", time: "09:55–10:40" },
+          { name: "Информатика", time: "11:00–11:45" },
+          { name: "Физ-ра", time: "12:05–12:50" },
+          { name: "Физика", time: "13:10–13:55" },
+          { name: "Английский", time: "14:05–14:50" },
+      ]},
+      { day: "Суббота", lessons: [
+          { name: "Геометрия", time: "09:00–09:45" }
+      ]},
+      { day: "Воскресенье", lessons: [] },
+    ];
 
-    const BACKEND_URL = "https://school-tracker-api-hxjl.onrender.com";
+    let dayPointer = 0;
 
-    const user = tg.initDataUnsafe?.user;
-    const userPill = document.getElementById("userPill");
-    userPill.textContent = user
-      ? `${user.first_name || "User"} · ID ${user.id}`
-      : "Открой через кнопку бота";
-
-    function showResult(text) {
-      const el = document.getElementById("result");
-      el.style.display = "block";
-      el.innerHTML = text;
+    function getTodayPointer() {
+      const d = new Date().getDay(); 
+      if (d === 0) return 6;
+      if (d === 6) return 5;
+      return d - 1;
     }
 
-    function requireInitData() {
-      const initData = tg.initData;
-      if (!initData) {
-        alert("tg.initData пустой — открой Mini App через кнопку бота (/start → 📊 Открыть трекер).");
-        return null;
-      }
-      return initData;
+    function setActiveDayButton(dayIndex) {
+      const buttons = document.querySelectorAll('.daysOfWeekBtn');
+      buttons.forEach(button => button.classList.remove('active'));
+      buttons[dayIndex].classList.add('active');
     }
 
-    function statusByPercent(p) {
-      if (p < 40) return {label: "✅ Ок", cls: "ok"};
-      if (p <= 60) return {label: "⚠️ Риск", cls: "warn"};
-      return {label: "❌ Перебор", cls: "bad"};
-    }
+    function displaySchedule(dayIndex) {
+      const daySchedule = schedule[dayIndex];
+      const dayName = daySchedule.day;
+      const lessons = daySchedule.lessons;
 
-    function renderSubjects(subjects) {
-      const box = document.getElementById("subjects");
-      const hint = document.getElementById("statsHint");
+      const scheduleContainer = document.getElementById("dayLessons");
+      const dayMetaEl = document.getElementById("dayMeta");
 
-      if (!subjects || !subjects.length) {
-        box.innerHTML = "";
-        hint.textContent = "Пока нет предметов. Добавь первый предмет ниже 👇";
+      document.getElementById("dayName").textContent = dayName;
+
+      if (lessons.length === 0) {
+        scheduleContainer.innerHTML = "Сегодня выходной!";
+        dayMetaEl.textContent = "";
         return;
       }
 
-      hint.textContent = `Предметов: ${subjects.length}`;
+      scheduleContainer.innerHTML = lessons.map((lesson, i) => `
+        <div class="lessonItem">
+          <div class="lessonNum">${i + 1}</div>
+          <div class="lessonName" onclick="editLessonText(event)">${lesson.name}</div>
+          <div class="lessonTime" onclick="editLessonTime(event)">${lesson.time}</div>
+        </div>
+      `).join('');
 
-      box.innerHTML = subjects.map(s => {
-        const missed = Number(s.missed || 0);
-        const total  = Number(s.total || 0);
-        const percent = total ? (missed / total * 100) : 0;
-        const percentText = total ? percent.toFixed(1) : "0.0";
-        const maxMissed = Math.floor(total * 0.6);
-        const canMiss = Math.max(0, maxMissed - missed);
-
-        const st = statusByPercent(percent);
-        const width = Math.min(100, Math.max(0, percent));
-
-        return `
-          <div class="subject">
-            <div class="subjectTop">
-              <div>
-                <div class="subjectName">📘 ${escapeHtml(s.name || "—")}</div>
-                <div class="muted">Пропуски: ${missed}/${total}</div>
-              </div>
-              <div class="badge ${st.cls}">${st.label}</div>
-            </div>
-
-            <div class="bar" aria-label="Progress">
-              <div style="width:${width}%;"></div>
-            </div>
-
-            <div class="meta">
-              <div>Процент пропусков: <b>${percentText}%</b></div>
-              <div>Можно ещё пропустить (60%): <b>${canMiss}</b></div>
-            </div>
-          </div>
-        `;
-      }).join("");
+      dayMetaEl.textContent = `Уроков: ${lessons.length}`;
+      setActiveDayButton(dayIndex);
     }
 
-    function escapeHtml(str) {
-      return String(str)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
+    function editLessonText(event) {
+      const lessonNameElement = event.target;
+      if (lessonNameElement.classList.contains('editing')) return;
+      const currentText = lessonNameElement.textContent;
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = currentText;
+      input.classList.add('editing');
+      lessonNameElement.innerHTML = '';
+      lessonNameElement.appendChild(input);
+      input.focus();
 
-    async function loadStats() {
-      const initData = requireInitData();
-      if (!initData) return;
-
-      const r = await fetch(`${BACKEND_URL}/tg/stats`, {
-        headers: { "X-Telegram-Init-Data": initData }
+      input.addEventListener('blur', function() {
+        const newText = input.value;
+        lessonNameElement.textContent = newText;
       });
 
-      if (!r.ok) {
-        const err = await r.text();
-        alert(`Ошибка /tg/stats: HTTP ${r.status}\n${err}`);
-        return;
-      }
-
-      const data = await r.json();
-      renderSubjects(data.subjects || []);
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          const newText = input.value;
+          lessonNameElement.textContent = newText;
+        }
+      });
     }
 
-    async function addSubject() {
-      const initData = requireInitData();
-      if (!initData) return;
+    function editLessonTime(event) {
+      const lessonTimeElement = event.target;
+      if (lessonTimeElement.classList.contains('editing')) return;
+      const currentTime = lessonTimeElement.textContent;
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = currentTime;
+      input.classList.add('editing');
+      lessonTimeElement.innerHTML = '';
+      lessonTimeElement.appendChild(input);
+      input.focus();
 
-      const name = document.getElementById("name").value.trim();
-      const missed = Number(document.getElementById("missed").value);
-      const total = Number(document.getElementById("total").value);
-
-      if (!name) return alert("Введите предмет");
-      if (!Number.isFinite(missed) || missed < 0) return alert("Пропуски должны быть >= 0");
-      if (!Number.isFinite(total) || total <= 0) return alert("Всего занятий должно быть > 0");
-
-      const r = await fetch(`${BACKEND_URL}/tg/add`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Telegram-Init-Data": initData
-        },
-        body: JSON.stringify({ name, missed, total })
+      input.addEventListener('blur', function() {
+        const newTime = input.value;
+        lessonTimeElement.textContent = newTime;
       });
 
-      if (!r.ok) {
-        const err = await r.text();
-        alert(`Ошибка /tg/add: HTTP ${r.status}\n${err}`);
-        return;
-      }
-
-      const data = await r.json();
-      const percentText = (typeof data.percent === "number") ? `${data.percent}%` : "—";
-      const canText = (typeof data.can_miss_more === "number") ? `${data.can_miss_more}` : "—";
-
-      showResult(`✅ Сохранено. Процент: <b>${percentText}</b> · ещё можно пропустить: <b>${canText}</b>`);
-
-      // очистим поля чуть аккуратнее
-      // document.getElementById("name").value = "";
-      // document.getElementById("missed").value = "";
-      // document.getElementById("total").value = "";
-
-      await loadStats();
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          const newTime = input.value;
+          lessonTimeElement.textContent = newTime;
+        }
+      });
     }
 
-    // Автозагрузка при открытии (можно выключить, если не нужно)
-    loadStats();
+    document.addEventListener('DOMContentLoaded', () => {
+      const todayPointer = getTodayPointer();
+      displaySchedule(todayPointer);
+      setActiveDayButton(todayPointer);
+    });
   </script>
 </body>
 </html>
